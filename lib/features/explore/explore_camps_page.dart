@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/core/constants/app_images.dart';
+import 'package:flutter_application_1/features/profile/contact_page.dart';
+import 'package:flutter_application_1/features/profile/profile_page.dart';
 import 'package:flutter_application_1/features/shop/shop_page.dart';
+import 'package:flutter_application_1/features/explore/camp_details_page.dart';
 
 class ExploreCampsPage extends StatelessWidget {
   const ExploreCampsPage({super.key});
@@ -20,14 +23,24 @@ class ExploreCampsPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.storefront_outlined),
+            icon: const Icon(Icons.support_agent, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ShopPage()),
+                MaterialPageRoute(builder: (_) => const ContactPage()),
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.person, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            },
+          ),
+          const SizedBox(width: 6),
         ],
       ),
       body: SafeArea(
@@ -35,21 +48,21 @@ class ExploreCampsPage extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             const Text(
-              "Find your next escape",
+              'Find your next escape',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 6),
             const Text(
-              "Browse camps & then shop what you need.",
+              'Browse camps & then shop what you need.',
               style: TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 16),
 
-            // زر واضح للشراء
+            // ✅ زر الشوب (الشراء)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -57,7 +70,7 @@ class ExploreCampsPage extends StatelessWidget {
                   backgroundColor: kAccent,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 onPressed: () {
@@ -66,16 +79,13 @@ class ExploreCampsPage extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const ShopPage()),
                   );
                 },
-                icon: const Icon(
-                  Icons.shopping_bag_outlined,
-                  color: Colors.black,
-                ),
+                icon: const Icon(Icons.shopping_bag, color: Colors.black),
                 label: const Text(
-                  "Shop Camping Gear",
+                  'Shop Camping Gear',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -83,43 +93,38 @@ class ExploreCampsPage extends StatelessWidget {
 
             const SizedBox(height: 18),
 
-            // كرتين كمبينغ (مبدئيًا)
-            _CampCard(
+            _campCard(
+              context,
               title: "Forest Lake Camp",
               location: "Near Mountain View",
               price: "\$45 / night",
-              imageUrl: kHeroImage,
             ),
-            _CampCard(
+            _campCard(
+              context,
               title: "Sunset Peak Base",
               location: "Highland Area",
               price: "\$60 / night",
-              imageUrl: kHeroImage,
+            ),
+            _campCard(
+              context,
+              title: "Riverside Chill Spot",
+              location: "River Valley",
+              price: "\$35 / night",
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _CampCard extends StatelessWidget {
-  final String title;
-  final String location;
-  final String price;
-  final String imageUrl;
-
-  const _CampCard({
-    required this.title,
-    required this.location,
-    required this.price,
-    required this.imageUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _campCard(
+    BuildContext context, {
+    required String title,
+    required String location,
+    required String price,
+  }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: const Color(0xFF15252A),
         borderRadius: BorderRadius.circular(18),
@@ -129,14 +134,15 @@ class _CampCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-            child: SizedBox(
+            child: Image.network(
+              kHeroImage,
               height: 160,
               width: double.infinity,
-              child: Image.network(imageUrl, fit: BoxFit.cover),
+              fit: BoxFit.cover,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -144,11 +150,11 @@ class _CampCard extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     const Icon(
@@ -156,12 +162,10 @@ class _CampCard extends StatelessWidget {
                       color: Colors.white54,
                       size: 18,
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
+                    const SizedBox(width: 4),
+                    Text(
+                      location,
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -173,14 +177,25 @@ class _CampCard extends StatelessWidget {
                       price,
                       style: const TextStyle(
                         color: kAccent,
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CampDetailsPage(
+                              title: title,
+                              location: location,
+                              price: price,
+                            ),
+                          ),
+                        );
+                      },
                       child: const Text(
-                        "View Details",
+                        'View Details',
                         style: TextStyle(color: Colors.white70),
                       ),
                     ),
