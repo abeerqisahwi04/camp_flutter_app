@@ -21,20 +21,27 @@ class CampDetailsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: kBgDark,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Camp Details',
           style: TextStyle(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
-            child: Image.network(kHeroImage, height: 220, fit: BoxFit.cover),
+            child: Image.network(
+              kHeroImage,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
           ),
+
           const SizedBox(height: 16),
+
           Text(
             title,
             style: const TextStyle(
@@ -43,9 +50,16 @@ class CampDetailsPage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 6),
-          Text(location, style: const TextStyle(color: Colors.white70)),
+
+          Text(
+            location,
+            style: const TextStyle(color: Colors.white70, fontSize: 15),
+          ),
+
           const SizedBox(height: 10),
+
           Text(
             price,
             style: const TextStyle(
@@ -54,7 +68,9 @@ class CampDetailsPage extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 20),
+
           const Text(
             'Description',
             style: TextStyle(
@@ -63,11 +79,41 @@ class CampDetailsPage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 6),
+
           const Text(
             'A beautiful camping spot with great views, perfect for a weekend escape.',
             style: TextStyle(color: Colors.white70, height: 1.4),
           ),
+
+          const SizedBox(height: 30),
+
+          // ================== BOOK NOW BUTTON ==================
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kAccent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Booking request sent (demo).")),
+                );
+              },
+              child: const Text(
+                "Book Now",
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
         ],
       ),
     );

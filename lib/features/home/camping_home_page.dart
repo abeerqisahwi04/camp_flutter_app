@@ -13,6 +13,7 @@ class CampingHomePage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            // صورة الهيرو
             Container(
               height: 300,
               width: double.infinity,
@@ -23,8 +24,10 @@ class CampingHomePage extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 25),
 
+            // العنوان
             const Text(
               "Camping Adventure",
               style: TextStyle(
@@ -33,8 +36,10 @@ class CampingHomePage extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
+
             const SizedBox(height: 10),
 
+            // الوصف
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18),
               child: Text(
@@ -44,8 +49,10 @@ class CampingHomePage extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: Colors.white70),
               ),
             ),
+
             const SizedBox(height: 30),
 
+            // زر Get Started → AuthPage
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(

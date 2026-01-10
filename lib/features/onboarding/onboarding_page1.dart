@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/core/constants/app_images.dart';
-import 'package:flutter_application_1/features/auth/auth_page.dart';
+import 'package:flutter_application_1/features/home/camping_home_page.dart';
 
 class OnboardingPage1 extends StatelessWidget {
   const OnboardingPage1({super.key});
@@ -57,7 +57,7 @@ class OnboardingPage1 extends StatelessWidget {
                   ),
                   const Spacer(),
 
-                  // زر Get Started
+                  // زر Get Started → يودّي على صفحة الـ Home (التعريفية الثانية)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -71,11 +71,13 @@ class OnboardingPage1 extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const AuthPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const CampingHomePage(),
+                          ),
                         );
                       },
                       child: const Text(
-                        "Get Started",
+                        "Continue",
                         style: TextStyle(
                           color: kBgDark,
                           fontSize: 16,

@@ -142,7 +142,7 @@ class _ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // image
+            // =========== الصورة المرتّبة ===========
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(18),
@@ -152,7 +152,7 @@ class _ProductCard extends StatelessWidget {
                 width: double.infinity,
                 child: Image.network(
                   product.imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.cover, // يخليها مليانة ومهذبة
                   errorBuilder: (_, __, ___) => Container(
                     color: const Color(0xFF0B1A1D),
                     child: const Center(
@@ -166,6 +166,7 @@ class _ProductCard extends StatelessWidget {
               ),
             ),
 
+            // =========== النصوص ===========
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               child: Column(
