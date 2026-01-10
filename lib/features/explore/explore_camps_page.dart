@@ -62,7 +62,6 @@ class ExploreCampsPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ✅ زر الشوب (الشراء)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

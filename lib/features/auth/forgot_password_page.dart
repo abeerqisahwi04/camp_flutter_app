@@ -19,7 +19,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void _sendResetLink() {
-    // مبدئياً (UI فقط) - لاحقاً بنربطه مع Firebase/Auth API
     setState(() => _sent = true);
 
     ScaffoldMessenger.of(context).showSnackBar(

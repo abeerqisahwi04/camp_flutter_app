@@ -31,7 +31,6 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void _goToHome() {
-    //  سكّر الكيبورد قبل التنقل
     FocusScope.of(context).unfocus();
 
     Navigator.pushReplacement(
@@ -43,7 +42,6 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      //  أي ضغط خارج الحقول يسكر الكيبورد
       onTap: () => FocusScope.of(context).unfocus(),
       child: DefaultTabController(
         length: 2,
@@ -58,7 +56,7 @@ class _AuthPageState extends State<AuthPage> {
                 color: Colors.white,
               ),
               onPressed: () {
-                FocusScope.of(context).unfocus(); // ✅
+                FocusScope.of(context).unfocus(); //
                 Navigator.pop(context);
               },
             ),
@@ -96,7 +94,7 @@ class _AuthPageState extends State<AuthPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     child: TabBarView(
                       children: [
-                        // ================= LOGIN =================
+                        // LOGIN
                         SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +132,7 @@ class _AuthPageState extends State<AuthPage> {
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
                                   onPressed: () {
-                                    FocusScope.of(context).unfocus(); // ✅
+                                    FocusScope.of(context).unfocus(); //
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -163,7 +161,7 @@ class _AuthPageState extends State<AuthPage> {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  onPressed: _goToHome, // ✅ يسكر الكيبورد
+                                  onPressed: _goToHome, //
                                   child: const Text(
                                     "Login",
                                     style: TextStyle(
@@ -177,7 +175,7 @@ class _AuthPageState extends State<AuthPage> {
                           ),
                         ),
 
-                        // ================= SIGN UP =================
+                        //  SIGN UP
                         SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +226,7 @@ class _AuthPageState extends State<AuthPage> {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  onPressed: _goToHome, // ✅
+                                  onPressed: _goToHome, //
                                   child: const Text(
                                     "Create Account",
                                     style: TextStyle(
