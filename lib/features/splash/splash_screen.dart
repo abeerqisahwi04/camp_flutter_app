@@ -13,11 +13,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted)
-        return; // ممكن الصفحة تنحذف قبل ما تخلص ال3 ثواني فهو بتاككد من وجودها
+    Future.delayed(const Duration(seconds: 20), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
-        // عشان لما يعمل باك ما يرججع للسبلاش يرجع للي بعدها
         context,
         MaterialPageRoute(builder: (_) => const OnboardingPage1()),
       );

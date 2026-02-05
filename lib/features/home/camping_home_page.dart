@@ -13,7 +13,7 @@ class CampingHomePage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // صورة الهيرو
+            // pic
             Container(
               height: 300,
               width: double.infinity,
@@ -52,7 +52,7 @@ class CampingHomePage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // زر Get Started → AuthPage
+            // → AuthPage
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(

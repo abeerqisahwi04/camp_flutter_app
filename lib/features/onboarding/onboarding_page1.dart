@@ -12,7 +12,7 @@ class OnboardingPage1 extends StatelessWidget {
       backgroundColor: kBgDark,
       body: Column(
         children: [
-          // الصورة
+          //pic
           Container(
             height: 360,
             width: double.infinity,
@@ -57,7 +57,6 @@ class OnboardingPage1 extends StatelessWidget {
                   ),
                   const Spacer(),
 
-                  // زر Get Started → يودّي على صفحة الـ Home (التعريفية الثانية)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

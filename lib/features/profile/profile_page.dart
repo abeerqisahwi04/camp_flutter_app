@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'my_favorites_page.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
-
-// استيراد الشاشات الجديدة
-import 'edit_profile_page.dart';
-import 'change_password_page.dart';
-import 'my_orders_page.dart';
-import 'contact_page.dart'; // Help & Support
-import '../auth/auth_page.dart'; // شاشة اللوجين / الأوث
+import 'package:flutter_application_1/features/auth/auth_page.dart';
+import 'package:flutter_application_1/features/profile/change_password_page.dart';
+import 'package:flutter_application_1/features/profile/edit_profile_page.dart';
+import 'package:flutter_application_1/features/profile/my_bookings_page.dart';
+import 'package:flutter_application_1/features/profile/contact_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final displayName = user?.displayName ?? 'Camper User';
+    final email = user?.email ?? 'No email';
+
     return Scaffold(
       backgroundColor: kBgDark,
       appBar: AppBar(
@@ -40,41 +45,31 @@ class ProfilePage extends StatelessWidget {
                     child: Icon(Icons.person, size: 38, color: Colors.black),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Camper User',
-                          style: TextStyle(
+                          displayName,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
-                          'camper@example.com',
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                          email,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 18),
-
-            // الإحصائيات
-            Row(
-              children: const [
-                _ProfileStat(label: 'Trips', value: '3'),
-                SizedBox(width: 12),
-                _ProfileStat(label: 'Bookings', value: '1'),
-                SizedBox(width: 12),
-                _ProfileStat(label: 'Orders', value: '4'),
-              ],
             ),
 
             const SizedBox(height: 22),
@@ -116,11 +111,22 @@ class ProfilePage extends StatelessWidget {
             // My Orders
             _ProfileItem(
               icon: Icons.history,
-              title: 'My Orders',
+              title: 'My Bookings',
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const MyOrdersPage()),
+                  MaterialPageRoute(builder: (_) => const MyBookingsPage()),
+                );
+              },
+            ),
+
+            _ProfileItem(
+              icon: Icons.favorite_border,
+              title: 'My Favorites',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyFavoritesPage()),
                 );
               },
             ),
@@ -149,58 +155,22 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
-            // Log out → رجوع لصفحة الأوث
+            // Log out
             _ProfileItem(
               icon: Icons.logout,
               title: 'Log out',
               danger: true,
-              onTap: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        const AuthPage(), // غيّري الاسم لو مختلف عندك
-                  ),
-                  (route) => false,
-                );
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AuthPage()),
+                    (route) => false,
+                  );
+                }
               },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileStat extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ProfileStat({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF15252A),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                color: kAccent,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),

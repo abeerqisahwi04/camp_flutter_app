@@ -1,9 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/core/constants/app_images.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ContactPage extends StatelessWidget {
+class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
+
+  @override
+  State<ContactPage> createState() => _ContactPageState();
+}
+
+class _ContactPageState extends State<ContactPage> {
+  final _emailController = TextEditingController();
+  final _messageController = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage() async {
+    final email = _emailController.text.trim();
+    final message = _messageController.text.trim();
+
+    // 1) validation
+    if (email.isEmpty || message.isEmpty) {
+      _showSnackBar('Please fill in all fields', isError: true);
+      return;
+    }
+
+    if (!email.contains('@') || !email.contains('.')) {
+      _showSnackBar('Please enter a valid email', isError: true);
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      await FirebaseFirestore.instance.collection('contactMessages').add({
+        'email': email,
+        'message': message,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      _showSnackBar('Message sent successfully 🎉');
+
+      _emailController.clear();
+      _messageController.clear();
+    } catch (e) {
+      _showSnackBar('Failed to send message. Try again later.', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isError ? Colors.red : Colors.green,
+        content: Text(message),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,27 +101,38 @@ class ContactPage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          _Field(label: 'Your Email'),
+          // email field
+          _Field(label: 'Your Email', controller: _emailController),
           const SizedBox(height: 12),
-          _Field(label: 'Message', maxLines: 5),
+
+          // message field
+          _Field(label: 'Message', controller: _messageController, maxLines: 5),
           const SizedBox(height: 18),
 
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kAccent,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kAccent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Message sent ✅')));
-            },
-            child: const Text(
-              'Send',
-              style: TextStyle(color: Colors.black, fontSize: 16),
+              onPressed: _loading ? null : _sendMessage,
+              child: _loading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                      ),
+                    )
+                  : const Text(
+                      'Send',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
             ),
           ),
         ],
@@ -70,11 +144,18 @@ class ContactPage extends StatelessWidget {
 class _Field extends StatelessWidget {
   final String label;
   final int maxLines;
-  const _Field({required this.label, this.maxLines = 1});
+  final TextEditingController controller;
+
+  const _Field({
+    required this.label,
+    required this.controller,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       maxLines: maxLines,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

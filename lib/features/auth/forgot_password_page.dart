@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
+import 'package:flutter_application_1/features/auth/service.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -10,7 +11,10 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _emailController = TextEditingController();
+  final AuthService _authService = AuthService();
+
   bool _sent = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -18,14 +22,32 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     super.dispose();
   }
 
-  void _sendResetLink() {
-    setState(() => _sent = true);
+  Future<void> _sendResetLink() async {
+    final email = _emailController.text.trim();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Reset link sent (demo). Check your email."),
-      ),
-    );
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter your email.")));
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      await _authService.sendResetEmail(email);
+      setState(() => _sent = true);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Reset link sent. Check your email.")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to send reset link. Try again.")),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -94,11 +116,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: _sendResetLink,
-                child: const Text(
-                  "Send reset link",
-                  style: TextStyle(color: Colors.black, fontSize: 16),
-                ),
+                onPressed: _loading ? null : _sendResetLink,
+                child: _loading
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      )
+                    : const Text(
+                        "Send reset link",
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      ),
               ),
             ),
 
@@ -121,7 +152,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "We sent a reset link (demo). You can go back and login.",
+                              "We sent a reset link. You can go back and login.",
                               style: TextStyle(color: Colors.white70),
                             ),
                           ),
