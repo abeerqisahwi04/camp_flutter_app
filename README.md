@@ -1,20 +1,28 @@
 # Camp Booking App 🏕️
 
-A Flutter mobile app for booking camping trips.
+A Flutter mobile application for booking camping trips, currently focused on building a complete and well-structured user interface.
 
-## Current Features
-- Authentication
+## ✨ Features
+- Authentication screens (UI only)
 - Browse camps
-- View details
-- Basic booking flow
+- Camp details screen
+- Multi-step booking flow
 
-## In Progress
+## 🚧 In Progress
+- Backend development (ASP.NET)
+- API integration
 - Payments
 - Notifications
-- UI improvements
 
-## Tech Stack
-Flutter • Firebase • Dart
+## 🧠 Highlights
+- Clean and organized UI structure
+- Complete user flow from browsing to booking
+- Designed to be integrated with a backend (ASP.NET)
 
-## Author
-Abeer Qishawi
+## 🛠️ Tech Stack
+- Flutter
+- Dart
+- ASP.NET (planned)
+
+## 👩‍💻 Author
+**Abeer Qishawi**
