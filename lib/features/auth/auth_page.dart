@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/core/constants/app_images.dart';
-import 'package:flutter_application_1/features/auth/widgets/auth_text_field.dart';
 import 'package:flutter_application_1/features/auth/forgot_password_page.dart';
+import 'package:flutter_application_1/features/auth/widgets/auth_text_field.dart';
 import 'package:flutter_application_1/features/explore/explore_camps_page.dart';
-import 'package:flutter_application_1/features/auth/service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -15,18 +13,12 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  // Controllers
   final TextEditingController _loginEmail = TextEditingController();
   final TextEditingController _loginPassword = TextEditingController();
 
   final TextEditingController _signupName = TextEditingController();
   final TextEditingController _signupEmail = TextEditingController();
   final TextEditingController _signupPassword = TextEditingController();
-
-  // Firebase Auth service
-  final AuthService _authService = AuthService();
-
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -47,13 +39,12 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
-  // ---------------- LOGIN ----------------
-  Future<void> _login() async {
+  void _login() {
     FocusScope.of(context).unfocus();
 
     final email = _loginEmail.text.trim();
@@ -64,20 +55,10 @@ class _AuthPageState extends State<AuthPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      await _authService.signIn(email: email, password: password);
-      _goToHome();
-    } catch (e) {
-      _showError("Login failed. Please check your email and password.");
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    _goToHome();
   }
 
-  // ---------------- SIGN UP ----------------
-  Future<void> _signUp() async {
+  void _signUp() {
     FocusScope.of(context).unfocus();
 
     final name = _signupName.text.trim();
@@ -94,21 +75,7 @@ class _AuthPageState extends State<AuthPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      await _authService.signUp(name: name, email: email, password: password);
-      _goToHome();
-    } on FirebaseAuthException catch (e) {
-      print('🔥 [AuthPage._signUp] code: ${e.code}');
-      print('🔥 [AuthPage._signUp] message: ${e.message}');
-      _showError("Firebase error: ${e.code}");
-    } catch (e) {
-      print('🔥 [AuthPage._signUp] other error: $e');
-      _showError("Sign up failed: $e");
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    _goToHome();
   }
 
   @override
@@ -122,11 +89,14 @@ class _AuthPageState extends State<AuthPage> {
           appBar: AppBar(
             backgroundColor: kBgDark,
             elevation: 0,
+            centerTitle: true,
             title: const Text(
               "Welcome to GoCamp",
-              style: TextStyle(color: Colors.white, fontSize: 20),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+              ),
             ),
-            centerTitle: true,
             bottom: const TabBar(
               indicatorColor: kAccent,
               labelColor: kAccent,
@@ -140,7 +110,6 @@ class _AuthPageState extends State<AuthPage> {
           body: SafeArea(
             child: Column(
               children: [
-                // صورة الهيرو
                 Container(
                   height: 180,
                   width: double.infinity,
@@ -152,19 +121,11 @@ class _AuthPageState extends State<AuthPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                if (_isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8.0),
-                    child: CircularProgressIndicator(color: kAccent),
-                  ),
-
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     child: TabBarView(
                       children: [
-                        // ---------------- LOGIN TAB ----------------
                         SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,10 +141,11 @@ class _AuthPageState extends State<AuthPage> {
                               const SizedBox(height: 6),
                               const Text(
                                 "Login to continue your adventure.",
-                                style: TextStyle(color: Colors.white70),
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                ),
                               ),
                               const SizedBox(height: 24),
-
                               AuthTextField(
                                 label: "Email",
                                 icon: Icons.email_outlined,
@@ -196,7 +158,6 @@ class _AuthPageState extends State<AuthPage> {
                                 controller: _loginPassword,
                                 obscure: true,
                               ),
-
                               const SizedBox(height: 8),
                               Align(
                                 alignment: Alignment.centerRight,
@@ -213,11 +174,12 @@ class _AuthPageState extends State<AuthPage> {
                                   },
                                   child: const Text(
                                     "Forgot password?",
-                                    style: TextStyle(color: Colors.white70),
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                    ),
                                   ),
                                 ),
                               ),
-
                               const SizedBox(height: 10),
                               SizedBox(
                                 width: double.infinity,
@@ -231,7 +193,7 @@ class _AuthPageState extends State<AuthPage> {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  onPressed: _isLoading ? null : _login,
+                                  onPressed: _login,
                                   child: const Text(
                                     "Login",
                                     style: TextStyle(
@@ -244,8 +206,6 @@ class _AuthPageState extends State<AuthPage> {
                             ],
                           ),
                         ),
-
-                        // ---------------- SIGN UP TAB ----------------
                         SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,10 +221,11 @@ class _AuthPageState extends State<AuthPage> {
                               const SizedBox(height: 6),
                               const Text(
                                 "Join GoCamp and start exploring.",
-                                style: TextStyle(color: Colors.white70),
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                ),
                               ),
                               const SizedBox(height: 24),
-
                               AuthTextField(
                                 label: "Full Name",
                                 icon: Icons.person_outline,
@@ -296,7 +257,7 @@ class _AuthPageState extends State<AuthPage> {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  onPressed: _isLoading ? null : _signUp,
+                                  onPressed: _signUp,
                                   child: const Text(
                                     "Create Account",
                                     style: TextStyle(
@@ -321,3 +282,4 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 }
+

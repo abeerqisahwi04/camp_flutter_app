@@ -3,11 +3,40 @@ import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/features/profile/contact_page.dart';
 import 'package:flutter_application_1/features/profile/profile_page.dart';
 import 'package:flutter_application_1/features/shop/shop_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application_1/features/explore/camp_details_page.dart';
 
 class ExploreCampsPage extends StatelessWidget {
   const ExploreCampsPage({super.key});
+
+  static const List<Map<String, dynamic>> _mockCamps = [
+    {
+      'campId': '1',
+      'name': 'Wadi Rum Desert Camp',
+      'location': 'Wadi Rum, Jordan',
+      'price': 35,
+      'image':
+          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee',
+      'rating': 4.8,
+    },
+    {
+      'campId': '2',
+      'name': 'Ajloun Forest Camp',
+      'location': 'Ajloun, Jordan',
+      'price': 28,
+      'image':
+          'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+      'rating': 4.6,
+    },
+    {
+      'campId': '3',
+      'name': 'Dead Sea Escape Camp',
+      'location': 'Dead Sea, Jordan',
+      'price': 42,
+      'image':
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+      'rating': 4.7,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +92,6 @@ class ExploreCampsPage extends StatelessWidget {
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 16),
-
-              // زر الشوب
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -92,71 +119,30 @@ class ExploreCampsPage extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 18),
-
-              // قراءة الكامبات من Firestore
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('camps')
-                      .orderBy('price')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: kAccent),
-                      );
-                    }
+                child: ListView.builder(
+                  itemCount: _mockCamps.length,
+                  itemBuilder: (context, i) {
+                    final data = _mockCamps[i];
 
-                    if (snapshot.hasError) {
-                      return const Center(
-                        child: Text(
-                          'Error loading camps',
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      );
-                    }
+                    final campId = data['campId'] as String;
+                    final title = data['name'] as String;
+                    final location = data['location'] as String;
+                    final priceValue = data['price'] as num;
+                    final priceText = "$priceValue JD / night";
+                    final imageUrl = data['image'] as String;
+                    final rating = (data['rating'] as num).toDouble();
 
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No camps found',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      );
-                    }
-
-                    final docs = snapshot.data!.docs;
-
-                    return ListView.builder(
-                      itemCount: docs.length,
-                      itemBuilder: (context, i) {
-                        final doc = docs[i];
-                        final data = doc.data() as Map<String, dynamic>;
-
-                        final campId = doc.id;
-                        final title = (data['name'] ?? 'Camp') as String;
-                        final location =
-                            (data['location'] ?? 'Unknown') as String;
-                        final priceValue = (data['price'] ?? 0) as num;
-                        final priceText = "$priceValue JD / night";
-                        final imageUrl =
-                            (data['image'] ?? '') as String; // رابط الصورة
-                        final rating =
-                            (data['rating'] ?? 0).toDouble() as double;
-
-                        return _campCard(
-                          context,
-                          campId: campId,
-                          title: title,
-                          location: location,
-                          priceText: priceText,
-                          priceValue: priceValue,
-                          imageUrl: imageUrl,
-                          rating: rating,
-                        );
-                      },
+                    return _campCard(
+                      context,
+                      campId: campId,
+                      title: title,
+                      location: location,
+                      priceText: priceText,
+                      priceValue: priceValue,
+                      imageUrl: imageUrl,
+                      rating: rating,
                     );
                   },
                 ),
@@ -194,6 +180,18 @@ class ExploreCampsPage extends StatelessWidget {
               height: 160,
               width: double.infinity,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image,
+                      color: Colors.white54,
+                      size: 40,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Padding(

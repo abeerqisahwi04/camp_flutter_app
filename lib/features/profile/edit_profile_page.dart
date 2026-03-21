@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -19,12 +18,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    final user = FirebaseAuth.instance.currentUser;
 
-    _nameController = TextEditingController(text: user?.displayName ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
-
-    _phoneController = TextEditingController();
+    // mock data بدل Firebase
+    _nameController = TextEditingController(text: "Camper User");
+    _emailController = TextEditingController(text: "camper@example.com");
+    _phoneController = TextEditingController(text: "+962 7X XXX XXXX");
   }
 
   @override
@@ -36,40 +34,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<void> _saveProfile() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final name = _nameController.text.trim();
 
-    if (user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please login first.')));
+    if (name.isEmpty) {
+      _showSnackBar('Name cannot be empty', isError: true);
       return;
     }
 
     setState(() => _saving = true);
 
-    try {
-      final newName = _nameController.text.trim();
+    await Future.delayed(const Duration(milliseconds: 800));
 
-      if (newName.isNotEmpty && newName != user.displayName) {
-        await user.updateDisplayName(newName);
-      }
+    if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile updated ✅')));
+    setState(() => _saving = false);
 
-      if (mounted) Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Failed to update profile.')),
-      );
-    } catch (_) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Something went wrong.')));
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    _showSnackBar('Profile updated ✅');
+
+    Navigator.pop(context);
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isError ? Colors.red : Colors.green,
+        content: Text(message),
+      ),
+    );
   }
 
   @override
@@ -112,11 +103,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 4),
-            _darkField(hint: "Camper User", controller: _nameController),
+            _darkField(
+              hint: "Camper User",
+              controller: _nameController,
+            ),
 
             const SizedBox(height: 16),
 
-            //
             const Text(
               "Email",
               style: TextStyle(color: Colors.white70, fontSize: 13),
@@ -131,7 +124,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
             const SizedBox(height: 16),
 
-            //
             const Text(
               "Phone",
               style: TextStyle(color: Colors.white70, fontSize: 13),
@@ -181,7 +173,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 }
 
-//
 Widget _darkField({
   required String hint,
   required TextEditingController controller,
@@ -203,7 +194,10 @@ Widget _darkField({
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
     ),
   );
 }

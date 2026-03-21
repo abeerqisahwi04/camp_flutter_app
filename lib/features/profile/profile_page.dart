@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'my_favorites_page.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/features/auth/auth_page.dart';
@@ -13,10 +12,9 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    final displayName = user?.displayName ?? 'Camper User';
-    final email = user?.email ?? 'No email';
+    // ✅ mock user بدل Firebase
+    const displayName = 'Camper User';
+    const email = 'camper@example.com';
 
     return Scaffold(
       backgroundColor: kBgDark,
@@ -30,7 +28,6 @@ class ProfilePage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // صورة وبطاقة الاسم
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -45,22 +42,22 @@ class ProfilePage extends StatelessWidget {
                     child: Icon(Icons.person, size: 38, color: Colors.black),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           displayName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           email,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
                           ),
@@ -84,7 +81,6 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Edit Profile
             _ProfileItem(
               icon: Icons.edit_outlined,
               title: 'Edit Profile',
@@ -96,7 +92,6 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
-            // Change Password
             _ProfileItem(
               icon: Icons.lock_outline,
               title: 'Change Password',
@@ -108,7 +103,6 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
-            // My Orders
             _ProfileItem(
               icon: Icons.history,
               title: 'My Bookings',
@@ -143,7 +137,6 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Help & Support → contact_page.dart
             _ProfileItem(
               icon: Icons.help_outline,
               title: 'Help & Support',
@@ -155,21 +148,16 @@ class ProfilePage extends StatelessWidget {
               },
             ),
 
-            // Log out
             _ProfileItem(
               icon: Icons.logout,
               title: 'Log out',
               danger: true,
-              onTap: () async {
-                await FirebaseAuth.instance.signOut();
-
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AuthPage()),
-                    (route) => false,
-                  );
-                }
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AuthPage()),
+                  (route) => false,
+                );
               },
             ),
           ],

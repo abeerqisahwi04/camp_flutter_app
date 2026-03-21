@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -19,8 +18,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool hideConfirm = true;
 
   bool _loading = false;
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -54,27 +51,21 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               hidden: hideCurrent,
               onToggle: () => setState(() => hideCurrent = !hideCurrent),
             ),
-
             const SizedBox(height: 16),
-
             _label("New Password"),
             _passwordField(
               controller: newController,
               hidden: hideNew,
               onToggle: () => setState(() => hideNew = !hideNew),
             ),
-
             const SizedBox(height: 16),
-
             _label("Confirm New Password"),
             _passwordField(
               controller: confirmController,
               hidden: hideConfirm,
               onToggle: () => setState(() => hideConfirm = !hideConfirm),
             ),
-
             const SizedBox(height: 24),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -176,52 +167,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
 
-    final user = _auth.currentUser;
-
-    if (user == null || user.email == null) {
-      _showSnackBar(
-        'No logged-in user found. Please log in again.',
-        isError: true,
-      );
-      return;
-    }
-
     setState(() => _loading = true);
 
-    try {
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: currentPass,
-      );
+    await Future.delayed(const Duration(milliseconds: 800));
 
-      await user.reauthenticateWithCredential(credential);
+    if (!mounted) return;
 
-      await user.updatePassword(newPass);
+    setState(() => _loading = false);
 
-      _showSnackBar('Password updated successfully 🎉');
+    _showSnackBar('Password updated successfully 🎉');
 
-      currentController.clear();
-      newController.clear();
-      confirmController.clear();
-    } on FirebaseAuthException catch (e) {
-      String message = 'Something went wrong';
-
-      if (e.code == 'wrong-password') {
-        message = 'Current password is incorrect';
-      } else if (e.code == 'weak-password') {
-        message = 'The new password is too weak';
-      } else if (e.code == 'requires-recent-login') {
-        message = 'Please log in again and try changing the password';
-      }
-
-      _showSnackBar(message, isError: true);
-    } catch (e) {
-      _showSnackBar('Unexpected error, please try again later', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
+    currentController.clear();
+    newController.clear();
+    confirmController.clear();
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

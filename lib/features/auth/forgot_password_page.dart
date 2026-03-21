@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
-import 'package:flutter_application_1/features/auth/service.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -10,11 +9,9 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final _emailController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final TextEditingController _emailController = TextEditingController();
 
   bool _sent = false;
-  bool _loading = false;
 
   @override
   void dispose() {
@@ -22,32 +19,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     super.dispose();
   }
 
-  Future<void> _sendResetLink() async {
+  void _sendResetLink() {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please enter your email.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email.")),
+      );
       return;
     }
 
-    setState(() => _loading = true);
+    setState(() => _sent = true);
 
-    try {
-      await _authService.sendResetEmail(email);
-      setState(() => _sent = true);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Reset link sent. Check your email.")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to send reset link. Try again.")),
-      );
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Reset link sent. Check your email.")),
+    );
   }
 
   @override
@@ -82,7 +68,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               style: TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 18),
-
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -103,9 +88,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 18),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -116,25 +99,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: _loading ? null : _sendResetLink,
-                child: _loading
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.black,
-                        ),
-                      )
-                    : const Text(
-                        "Send reset link",
-                        style: TextStyle(color: Colors.black, fontSize: 16),
-                      ),
+                onPressed: _sendResetLink,
+                child: const Text(
+                  "Send reset link",
+                  style: TextStyle(color: Colors.black, fontSize: 16),
+                ),
               ),
             ),
-
             const SizedBox(height: 12),
-
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
               child: _sent

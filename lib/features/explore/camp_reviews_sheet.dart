@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 
@@ -18,17 +16,22 @@ class CampReviewsSheet extends StatefulWidget {
 }
 
 class _CampReviewsSheetState extends State<CampReviewsSheet> {
-  final _commentCtrl = TextEditingController();
+  final TextEditingController _commentCtrl = TextEditingController();
+
   double _rating = 5.0;
-  bool _submitting = false;
 
-  User? get _user => FirebaseAuth.instance.currentUser;
-
-  CollectionReference<Map<String, dynamic>> get _reviewsRef => FirebaseFirestore
-      .instance
-      .collection('camps')
-      .doc(widget.campId)
-      .collection('reviews');
+  final List<Map<String, dynamic>> _reviews = [
+    {
+      'userName': 'Ahmad',
+      'rating': 5.0,
+      'comment': 'Amazing place and very peaceful atmosphere.',
+    },
+    {
+      'userName': 'Lina',
+      'rating': 4.0,
+      'comment': 'Nice camp, clean area, and friendly staff.',
+    },
+  ];
 
   @override
   void dispose() {
@@ -36,62 +39,32 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
     super.dispose();
   }
 
-  Future<void> _submitReview() async {
-    if (_user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please login first.')));
-      return;
-    }
-
+  void _submitReview() {
     final comment = _commentCtrl.text.trim();
+
     if (comment.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Write a comment first.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Write a comment first.')),
+      );
       return;
     }
 
-    setState(() => _submitting = true);
-
-    try {
-      // ✅ (اختياري) جلب الاسم من users إذا عندك
-      String userName = 'User';
-      try {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(_user!.uid)
-            .get();
-        final data = userDoc.data();
-        if (data != null && data['name'] != null)
-          userName = data['name'].toString();
-      } catch (_) {}
-
-      await _reviewsRef.add({
-        'userId': _user!.uid,
-        'userName': userName,
+    setState(() {
+      _reviews.insert(0, {
+        'userName': 'You',
         'rating': _rating,
         'comment': comment,
-        'createdAt': FieldValue.serverTimestamp(),
       });
-
       _commentCtrl.clear();
-      setState(() => _rating = 5.0);
+      _rating = 5.0;
+    });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Review added ✅')));
-    } catch (_) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to add review.')));
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Review added ✅')),
+    );
   }
 
   Widget _stars(double value) {
-    // نعرض نجوم بسيطة
     final full = value.floor().clamp(0, 5);
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -116,7 +89,6 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       child: Column(
         children: [
-          // handle
           Container(
             width: 48,
             height: 5,
@@ -126,7 +98,6 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
             ),
           ),
           const SizedBox(height: 10),
-
           Row(
             children: [
               Expanded(
@@ -142,10 +113,8 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
 
-          // add review box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -164,7 +133,6 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 Row(
                   children: [
                     const Text(
@@ -190,7 +158,6 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
                     ),
                   ],
                 ),
-
                 TextField(
                   controller: _commentCtrl,
                   maxLines: 2,
@@ -206,9 +173,7 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -219,23 +184,14 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: _submitting ? null : _submitReview,
-                    child: _submitting
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
-                          )
-                        : const Text(
-                            'Submit',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
+                    onPressed: _submitReview,
+                    child: const Text(
+                      'Submit',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -244,83 +200,57 @@ class _CampReviewsSheetState extends State<CampReviewsSheet> {
 
           const SizedBox(height: 14),
 
-          // reviews list
           Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _reviewsRef
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: kAccent),
-                  );
-                }
-
-                final docs = snapshot.data!.docs;
-                if (docs.isEmpty) {
-                  return const Center(
+            child: _reviews.isEmpty
+                ? const Center(
                     child: Text(
                       'No reviews yet. Be the first ⭐',
                       style: TextStyle(color: Colors.white70),
                     ),
-                  );
-                }
+                  )
+                : ListView.separated(
+                    itemCount: _reviews.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) {
+                      final review = _reviews[i];
+                      final userName = review['userName'].toString();
+                      final rating = (review['rating'] as num).toDouble();
+                      final comment = review['comment'].toString();
 
-                return ListView.separated(
-                  itemCount: docs.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, i) {
-                    final d = docs[i].data();
-                    final userName = (d['userName'] ?? 'User').toString();
-                    final rating = (d['rating'] ?? 5).toDouble();
-                    final comment = (d['comment'] ?? '').toString();
-
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white10,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    userName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              _stars(rating),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            comment,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                                _stars(rating),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              comment,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

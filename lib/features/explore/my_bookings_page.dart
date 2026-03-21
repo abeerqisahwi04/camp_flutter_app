@@ -1,91 +1,192 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 
-class MyBookingsPage extends StatelessWidget {
+class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
 
-  User? get _user => FirebaseAuth.instance.currentUser;
+  @override
+  State<MyBookingsPage> createState() => _MyBookingsPageState();
+}
 
-  Future<void> _cancelBooking(BuildContext context, String bookingId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(bookingId)
-          .update({'status': 'Cancelled'});
+class _MyBookingsPageState extends State<MyBookingsPage> {
+  final List<Map<String, dynamic>> _bookings = [
+    {
+      'id': '1',
+      'campName': 'Wadi Rum Desert Camp',
+      'location': 'Wadi Rum, Jordan',
+      'startDate': DateTime.now().add(const Duration(days: 5)),
+      'endDate': DateTime.now().add(const Duration(days: 7)),
+      'totalPrice': 70,
+      'status': 'Pending',
+    },
+    {
+      'id': '2',
+      'campName': 'Ajloun Forest Camp',
+      'location': 'Ajloun, Jordan',
+      'startDate': DateTime.now().subtract(const Duration(days: 10)),
+      'endDate': DateTime.now().subtract(const Duration(days: 8)),
+      'totalPrice': 56,
+      'status': 'Completed',
+    },
+    {
+      'id': '3',
+      'campName': 'Dead Sea Escape Camp',
+      'location': 'Dead Sea, Jordan',
+      'startDate': DateTime.now().add(const Duration(days: 12)),
+      'endDate': DateTime.now().add(const Duration(days: 14)),
+      'totalPrice': 84,
+      'status': 'Confirmed',
+    },
+  ];
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Booking cancelled.')));
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to cancel booking.')),
-      );
-    }
+  void _cancelBooking(BuildContext context, String bookingId) {
+    final index = _bookings.indexWhere((booking) => booking['id'] == bookingId);
+    if (index == -1) return;
+
+    setState(() {
+      _bookings[index]['status'] = 'Cancelled';
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Booking cancelled.')),
+    );
   }
 
-  // ✅ يجيب endDate إذا موجودة، وإذا لا يرجع null
-  DateTime? _getEndDate(DocumentSnapshot d) {
-    final data = d.data() as Map<String, dynamic>?;
-    final end = data?['endDate'];
-    if (end is Timestamp) return end.toDate();
+  DateTime? _getEndDate(Map<String, dynamic> booking) {
+    final end = booking['endDate'];
+    if (end is DateTime) return end;
     return null;
   }
 
-  // ✅ يعرض date range إذا موجود، وإلا يعرض date string إذا موجود
-  String _getDateText(DocumentSnapshot d) {
-    final data = d.data() as Map<String, dynamic>?;
+  String _getDateText(Map<String, dynamic> booking) {
+    final start = booking['startDate'];
+    final end = booking['endDate'];
 
-    final start = data?['startDate'];
-    final end = data?['endDate'];
-
-    if (start is Timestamp && end is Timestamp) {
-      final s = start.toDate().toString().split(' ').first;
-      final e = end.toDate().toString().split(' ').first;
+    if (start is DateTime && end is DateTime) {
+      final s = start.toString().split(' ').first;
+      final e = end.toString().split(' ').first;
       return '$s → $e';
     }
 
-    final date = data?['date'];
+    final date = booking['date'];
     if (date is String && date.isNotEmpty) return date;
 
     return '—';
   }
 
-  // ✅ يعتبر Past فقط إذا endDate موجودة وانتهت
-  bool _isPast(DocumentSnapshot d) {
-    final end = _getEndDate(d);
-    if (end == null) return false; // اللي ما عنده endDate نحسبه Upcoming مؤقتًا
+  bool _isPast(Map<String, dynamic> booking) {
+    final end = _getEndDate(booking);
+    if (end == null) return false;
     return end.isBefore(DateTime.now());
+  }
+
+  Color _statusColor(String status) {
+    if (status == 'Cancelled') return Colors.redAccent;
+    if (status == 'Pending') return Colors.orangeAccent;
+    if (status == 'Confirmed') return Colors.greenAccent;
+    return Colors.white70;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_user == null) {
-      return Scaffold(
-        backgroundColor: kBgDark,
-        appBar: AppBar(
-          backgroundColor: kBgDark,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: const Text(
-            'My Bookings',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        body: const Center(
+    final upcoming = _bookings.where((booking) => !_isPast(booking)).toList();
+    final past = _bookings.where((booking) => _isPast(booking)).toList();
+
+    Widget list(List<Map<String, dynamic>> items, {required bool pastList}) {
+      if (items.isEmpty) {
+        return Center(
           child: Text(
-            'Please login first.',
-            style: TextStyle(color: Colors.white70),
+            pastList ? 'No past bookings.' : 'No upcoming bookings.',
+            style: const TextStyle(color: Colors.white70),
           ),
-        ),
+        );
+      }
+
+      return ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          final booking = items[index];
+
+          final id = booking['id'].toString();
+          final name = booking['campName'].toString();
+          final location = booking['location'].toString();
+          final status = booking['status'].toString();
+          final total = booking['totalPrice'] as num;
+          final dateText = _getDateText(booking);
+
+          final canCancel = !pastList && status != 'Cancelled';
+
+          return Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        color: _statusColor(status),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                if (location.isNotEmpty)
+                  Text(
+                    location,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                const SizedBox(height: 6),
+                Text(
+                  dateText,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Text(
+                      'Total: $total JD',
+                      style: const TextStyle(
+                        color: kAccent,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (canCancel)
+                      TextButton(
+                        onPressed: () => _cancelBooking(context, id),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       );
     }
-
-    // ✅ بدون orderBy عشان ما يطلع error بسبب createdAt أو index
-    final query = FirebaseFirestore.instance
-        .collection('bookings')
-        .where('userId', isEqualTo: _user!.uid);
 
     return DefaultTabController(
       length: 2,
@@ -109,143 +210,11 @@ class MyBookingsPage extends StatelessWidget {
             ],
           ),
         ),
-        body: StreamBuilder<QuerySnapshot>(
-          stream: query.snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Something went wrong:\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              );
-            }
-            if (!snapshot.hasData) {
-              return const Center(
-                child: CircularProgressIndicator(color: kAccent),
-              );
-            }
-
-            final docs = snapshot.data!.docs;
-
-            final upcoming = docs.where((d) => !_isPast(d)).toList();
-            final past = docs.where((d) => _isPast(d)).toList();
-
-            Widget list(
-              List<DocumentSnapshot> items, {
-              required bool pastList,
-            }) {
-              if (items.isEmpty) {
-                return Center(
-                  child: Text(
-                    pastList ? 'No past bookings.' : 'No upcoming bookings.',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                );
-              }
-
-              return ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final d = items[index];
-                  final data = d.data() as Map<String, dynamic>?;
-
-                  final id = d.id;
-                  final name = (data?['campName'] ?? data?['campId'] ?? 'Camp')
-                      .toString();
-                  final location = (data?['location'] ?? '').toString();
-                  final status = (data?['status'] ?? 'Pending').toString();
-
-                  final total =
-                      (data?['totalPrice'] ?? data?['price'] ?? 0) as num;
-                  final dateText = _getDateText(d);
-
-                  final canCancel = !pastList && status != 'Cancelled';
-
-                  return Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              status,
-                              style: TextStyle(
-                                color: status == 'Cancelled'
-                                    ? Colors.redAccent
-                                    : (status == 'Pending'
-                                          ? Colors.orangeAccent
-                                          : Colors.greenAccent),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        if (location.isNotEmpty)
-                          Text(
-                            location,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        const SizedBox(height: 6),
-                        Text(
-                          dateText,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Text(
-                              'Total: $total JD',
-                              style: const TextStyle(
-                                color: kAccent,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const Spacer(),
-                            if (canCancel)
-                              TextButton(
-                                onPressed: () => _cancelBooking(context, id),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(color: Colors.redAccent),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            }
-
-            return TabBarView(
-              children: [
-                list(upcoming, pastList: false),
-                list(past, pastList: true),
-              ],
-            );
-          },
+        body: TabBarView(
+          children: [
+            list(upcoming, pastList: false),
+            list(past, pastList: true),
+          ],
         ),
       ),
     );

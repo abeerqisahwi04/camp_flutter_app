@@ -1,9 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
-
-// ✅ عدّلي المسار حسب مكان الملف عندك
 import 'explore_camps_page.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
@@ -11,11 +7,9 @@ class ConfirmBookingPage extends StatefulWidget {
   final String campName;
   final String location;
   final String image;
-
   final num pricePerNight;
   final DateTime startDate;
   final DateTime endDate;
-
   final int guests;
   final int nights;
   final num totalPrice;
@@ -41,54 +35,24 @@ class ConfirmBookingPage extends StatefulWidget {
 class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   bool _loading = false;
 
-  User? get _user => FirebaseAuth.instance.currentUser;
-
   Future<void> _confirm() async {
-    if (_user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please login first.')));
-      return;
-    }
-
     setState(() => _loading = true);
 
-    try {
-      await FirebaseFirestore.instance.collection('bookings').add({
-        'userId': _user!.uid,
-        'campId': widget.campId,
-        'campName': widget.campName,
-        'location': widget.location,
-        'image': widget.image,
-        'pricePerNight': widget.pricePerNight,
-        'startDate': Timestamp.fromDate(widget.startDate),
-        'endDate': Timestamp.fromDate(widget.endDate),
-        'guests': widget.guests,
-        'nights': widget.nights,
-        'totalPrice': widget.totalPrice,
-        'status': 'Pending',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    await Future.delayed(const Duration(milliseconds: 800));
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Booking confirmed!')));
+    setState(() => _loading = false);
 
-      // ✅ بعد التأكيد: روح على ExploreCampsPage وامسح صفحات الحجز
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const ExploreCampsPage()),
-        (route) => false,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to confirm booking.')),
-      );
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Booking confirmed!')),
+    );
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const ExploreCampsPage()),
+      (route) => false,
+    );
   }
 
   @override
@@ -126,7 +90,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 18),
-
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -164,9 +127,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 ],
               ),
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

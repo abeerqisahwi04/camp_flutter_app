@@ -123,7 +123,7 @@ class _CartPageState extends State<CartPage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '\$${item.product.price.toStringAsFixed(2)}',
+                               '${item.product.price.toStringAsFixed(2)} JD',
                                 style: const TextStyle(
                                   color: kAccent,
                                   fontWeight: FontWeight.w700,

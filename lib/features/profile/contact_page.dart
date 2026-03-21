@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/app_colors.dart';
 import 'package:flutter_application_1/core/constants/app_images.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
@@ -13,6 +12,7 @@ class ContactPage extends StatefulWidget {
 class _ContactPageState extends State<ContactPage> {
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
+
   bool _loading = false;
 
   @override
@@ -26,7 +26,6 @@ class _ContactPageState extends State<ContactPage> {
     final email = _emailController.text.trim();
     final message = _messageController.text.trim();
 
-    // 1) validation
     if (email.isEmpty || message.isEmpty) {
       _showSnackBar('Please fill in all fields', isError: true);
       return;
@@ -39,24 +38,16 @@ class _ContactPageState extends State<ContactPage> {
 
     setState(() => _loading = true);
 
-    try {
-      await FirebaseFirestore.instance.collection('contactMessages').add({
-        'email': email,
-        'message': message,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    await Future.delayed(const Duration(milliseconds: 800));
 
-      _showSnackBar('Message sent successfully 🎉');
+    if (!mounted) return;
 
-      _emailController.clear();
-      _messageController.clear();
-    } catch (e) {
-      _showSnackBar('Failed to send message. Try again later.', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
+    setState(() => _loading = false);
+
+    _showSnackBar('Message sent successfully 🎉');
+
+    _emailController.clear();
+    _messageController.clear();
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
@@ -75,7 +66,10 @@ class _ContactPageState extends State<ContactPage> {
       appBar: AppBar(
         backgroundColor: kBgDark,
         elevation: 0,
-        title: const Text('Contact Us', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Contact Us',
+          style: TextStyle(color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
@@ -83,7 +77,22 @@ class _ContactPageState extends State<ContactPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
-            child: Image.network(kHeroImage, height: 180, fit: BoxFit.cover),
+            child: Image.network(
+              kHeroImage,
+              height: 180,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                height: 180,
+                color: const Color(0xFF15252A),
+                child: const Center(
+                  child: Icon(
+                    Icons.broken_image,
+                    color: Colors.white54,
+                    size: 40,
+                  ),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -100,15 +109,17 @@ class _ContactPageState extends State<ContactPage> {
             style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 20),
-
-          // email field
-          _Field(label: 'Your Email', controller: _emailController),
+          _Field(
+            label: 'Your Email',
+            controller: _emailController,
+          ),
           const SizedBox(height: 12),
-
-          // message field
-          _Field(label: 'Message', controller: _messageController, maxLines: 5),
+          _Field(
+            label: 'Message',
+            controller: _messageController,
+            maxLines: 5,
+          ),
           const SizedBox(height: 18),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
